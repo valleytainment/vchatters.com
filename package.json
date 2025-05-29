@@ -1,0 +1,29 @@
+{
+  "name": "ai-debate-bot",
+  "version": "1.0.0",
+  "description": "AI Debate Bot - A cost-optimized application for AI debates",
+  "main": "index.js",
+  "scripts": {
+    "start": "netlify dev",
+    "build": "cd frontend && npm run build",
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/functions": "^2.0.0",
+    "firebase-admin": "^11.10.1",
+    "openai": "^4.20.0",
+    "@google/generative-ai": "^0.1.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "keywords": [
+    "ai",
+    "debate",
+    "netlify",
+    "serverless"
+  ],
+  "author": "",
+  "license": "ISC"
+}
