@@ -10,6 +10,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [sessionId, setSessionId] = useState('');
   const [eventSource, setEventSource] = useState(null);
+  const [useApiMode, setUseApiMode] = useState(false);
 
   // Generate a new session ID when the component mounts
   useEffect(() => {
@@ -41,8 +42,13 @@ function App() {
     
     setMessages([userMessage]);
     
+    // Determine which endpoint to use based on mode
+    const endpoint = useApiMode 
+      ? `/.netlify/functions/debate-stream?topic=${encodeURIComponent(newTopic)}&sessionId=${sessionId}`
+      : `/.netlify/functions/no-api-debate-stream?topic=${encodeURIComponent(newTopic)}&sessionId=${sessionId}`;
+    
     // Create a new EventSource for SSE
-    const sse = new EventSource(`/.netlify/functions/debate-stream?topic=${encodeURIComponent(newTopic)}&sessionId=${sessionId}`);
+    const sse = new EventSource(endpoint);
     
     sse.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -74,7 +80,11 @@ function App() {
   const handleStopDebate = () => {
     if (eventSource) {
       // Send stop signal to backend
-      fetch(`/.netlify/functions/debate?action=stop&sessionId=${sessionId}`, {
+      const endpoint = useApiMode 
+        ? `/.netlify/functions/debate?action=stop&sessionId=${sessionId}`
+        : `/.netlify/functions/no-api-debate?action=stop&sessionId=${sessionId}`;
+      
+      fetch(endpoint, {
         method: 'POST'
       }).catch(error => console.error('Error stopping debate:', error));
       
@@ -86,11 +96,31 @@ function App() {
     setIsDebating(false);
   };
 
+  const toggleApiMode = () => {
+    if (!isDebating) {
+      setUseApiMode(!useApiMode);
+    }
+  };
+
   return (
     <div className="App">
       <header className="App-header">
         <h1>AI Debate Bot</h1>
         <p>Enter a topic and watch two AI bots debate it in real-time</p>
+        <div className="mode-toggle">
+          <label className="switch">
+            <input 
+              type="checkbox" 
+              checked={useApiMode} 
+              onChange={toggleApiMode}
+              disabled={isDebating}
+            />
+            <span className="slider round"></span>
+          </label>
+          <span className="mode-label">
+            {useApiMode ? 'API Mode (requires keys)' : 'Free Mode (no API keys)'}
+          </span>
+        </div>
       </header>
       
       <main className="App-main">
@@ -107,7 +137,11 @@ function App() {
       </main>
       
       <footer className="App-footer">
-        <p>Powered by OpenAI and Google Gemini</p>
+        <p>
+          {useApiMode 
+            ? 'Powered by OpenAI and Google Gemini' 
+            : 'Running in free mode with pre-written responses'}
+        </p>
       </footer>
     </div>
   );
